@@ -1,0 +1,9 @@
+column,max
+s4_start_stop_count,3747.0
+s7_seek_error_rate,614923599446.0
+s12_power_cycle_count,684.0
+s174_unexpected_power_loss_count,2591.0
+s183_sata_downshift_count,1149.0
+s191_g_sense_error_rate,14764654.0
+s192_power_off_retract_count,14270.0
+s193_load_unload_cycle_count,489809.0
