@@ -1,7 +1,7 @@
-Reading List:
-- [Spark](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#window-operations-on-event-time)
-- [KMeans](https://spark.apache.org/docs/latest/mllib-clustering.html)
-- [KMeans II](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.mllib.clustering.KMeans.html)
-- [KMeans Streaming](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.mllib.clustering.StreamingKMeans.html#pyspark.mllib.clustering.StreamingKMeans.setInitialCenters)
-- [KMeans Initialization](https://stackoverflow.com/questions/35426240/how-to-initialize-cluster-centers-for-k-means-in-spark-mllib)
-- [PySpark CSV](https://medium.com/analytics-vidhya/apache-spark-structured-streaming-with-pyspark-b4a054a7947d)
+# ToDo List
+- Adjust Query 1 and put in .py file
+- Get Access to data through API (Email already sent)
+- Use implementation form [PySpark](https://github.com/apache/spark/blob/master/python/pyspark/mllib/clustering.py) to adjust by setting initial centers 
+- Write function to turn data stream into fitting dense Vector List
+- Start with report and use contents from Jupyter Notebook
+- Finalize Query 2 and put in .py file
