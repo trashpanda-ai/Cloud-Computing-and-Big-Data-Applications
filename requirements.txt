@@ -34,3 +34,4 @@ traitlets
 typing_extensions 
 wcwidth 
 zipp 
+numpy
