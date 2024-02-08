@@ -7,8 +7,9 @@ import challenger_pb2 as ch
 import challenger_pb2_grpc as api
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, explode, split, sum, window
+from pyspark.sql.functions import from_json
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, BooleanType, ArrayType
+
 
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
@@ -27,6 +28,10 @@ schema = StructType([
     ]))
 ])
 
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode
+from pyspark.sql.functions import split
+
 spark = SparkSession \
     .builder \
     .appName("StructuredNetworkWordCount") \
@@ -39,32 +44,22 @@ lines = spark \
     .option("port", 5023) \
     .load()
 
-streamingData = lines \
-    .select(from_json(lines.value, schema).alias("data")) \
-    .select("data.*")
+# Split the lines into words
+words = lines.select(
+   explode(
+       split(lines.value, " ")
+   ).alias("word")
+)
+
+# Generate running word count
+wordCounts = words.groupBy("word").count()
 
 
-windowedData = streamingData \
-    .withWatermark("Timestamp", "31 days") \
-    .groupBy(
-        window(streamingData["Timestamp"]["seconds"], "30 days", "1 day"),
-        streamingData["Vault ID"],
-        streamingData["Model"]
-    ) \
-    .agg(sum("Failure").alias("total_failures"))
-
-selectedData = windowedData.select("window.start", "Vault ID", "total_failures")
-
-filteredData = selectedData.filter(selectedData.total_failures > 0)
-
-query = filteredData \
+ # Start running the query that prints the running counts to the console
+query = wordCounts \
     .writeStream \
     .outputMode("complete") \
     .format("console") \
-    .queryName("filteredData") \
-    .option("numRows", 50) \
-    .option("truncate", "false") \
     .start()
 
 query.awaitTermination()
-query.stop()

@@ -1,17 +1,15 @@
 import grpc
 import challenger_pb2 as ch
 import challenger_pb2_grpc as api
-from google.protobuf import empty_pb2
-
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import window, col, sum as _sum
+from pyspark.sql.functions import window, sum as _sum
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType
 from datetime import datetime
 
-# Configuración de Spark
+# Spark configuration
 spark = SparkSession.builder.appName("StreamingFromCSV").getOrCreate()
 
-# Esquema para los datos de Spark
+# Schema for Spark data
 schema = StructType([
     StructField("date", TimestampType(), True),
     StructField("serial_number", StringType(), True),
@@ -20,15 +18,15 @@ schema = StructType([
     StructField("vault_id", IntegerType(), True)
 ])
 
-# Función para procesar el lote con Spark
+# Function to process the batch with Spark
 def processTheBatchQ1(batch):
-    # Convertir el objeto de fecha y hora a un formato compatible con Spark
+    # Convert timestamp object to Spark compatible format
     formatted_states = [(datetime.fromtimestamp(state.date.seconds), state.serial_number, state.model, int(state.failure), state.vault_id) for state in batch.states]
 
-    # Crear DataFrame de Spark
+    # Create Spark DataFrame
     df = spark.createDataFrame(formatted_states, schema=schema)
 
-    # Aplicar operaciones de Spark
+    # Apply Spark operations
     windowedData = df \
         .withWatermark("date", "31 days") \
         .groupBy(
@@ -41,13 +39,13 @@ def processTheBatchQ1(batch):
     selectedData = windowedData.select("window.start", "vault_id", "total_failures")
     filteredData = selectedData.filter(selectedData.total_failures > 0)
 
-    return filteredData.collect()  # Devolver los datos procesados como lista
+    return filteredData.collect()  # Return processed data as list
 
-# Conexión con el servidor gRPC
+# gRPC server connection
 with grpc.insecure_channel('challenge2024.debs.org:5023') as channel:
     stub = api.ChallengerStub(channel)
 
-    # Paso 1 - Crear un nuevo Benchmark
+    # Step 1 - Create a new Benchmark
     benchmarkconfiguration = ch.BenchmarkConfiguration(
         token='ljhcowvpnamgmyxfnsrqvhimyvcjdhzz',
         benchmark_name="this name shows_up_in_dashboard",
@@ -58,29 +56,29 @@ with grpc.insecure_channel('challenge2024.debs.org:5023') as channel:
 
     stub.startBenchmark(benchmark)
 
-    cnt_current = 0
-    cnt_historic = 0
     cnt = 0
 
-    # Procesar los lotes con Spark y enviar resultados al servidor gRPC
+    # Process batches with Spark and send results to gRPC server
     batch = stub.nextBatch(benchmark)
-    while batch:
-        print('hola')
-        processTheBatchQ1(batch)  # No es necesario almacenar el resultado en una variable
-        print('chao')
-        resultQ1 = ch.ResultQ1(
-            benchmark_id=benchmark.id,
-            batch_seq_id=batch.seq_id,
-        )
-        stub.resultQ1(resultQ1)
+    while batch and cnt < 1000:
+        print('Processing batch', cnt)
+        processed_data = processTheBatchQ1(batch)  # Process the batch and store the result
+        
+        # Send processed data to gRPC server
+        for row in processed_data:
+            resultQ1 = ch.ResultQ1(
+                benchmark_id=benchmark.id,
+                batch_seq_id=batch.seq_id,
+            )
+            stub.resultQ1(resultQ1)
 
-        if batch.last or cnt > 1_000:
+        if batch.last:
             break
 
         cnt += 1
         batch = stub.nextBatch(benchmark)
 
-    # Finaliza la medición del benchmark
-    stub.endMeasurement(benchmark)
+    # Finish benchmark measurement
+    stub.endBenchmark(benchmark)
 
 print("Finished")
