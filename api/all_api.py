@@ -48,7 +48,7 @@ with grpc.insecure_channel('challenge2024.debs.org:5023') as channel:
     # Step 1 - Create a new Benchmark
     benchmarkconfiguration = ch.BenchmarkConfiguration(
         token='ljhcowvpnamgmyxfnsrqvhimyvcjdhzz',
-        benchmark_name="this name shows_up_in_dashboard",
+        benchmark_name="OT6-Cloud-Computing-and-Big-Data-Applications",
         benchmark_type="test",
         queries=[ch.Query.Q1, ch.Query.Q2]
     )
