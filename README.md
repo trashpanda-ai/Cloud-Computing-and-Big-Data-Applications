@@ -72,5 +72,31 @@ The live output of this query is presented in this Table:
 ### Second Query Implementation
 The second query involves dynamic K-Means clustering. Due to implementation challenges, the theoretical approach outlined in the project [report](https://www.overleaf.com/read/bngdyswhtzyp#929bac) is not fully functional. However, the [code](https://github.com/trashpanda-ai/Cloud-Computing-and-Big-Data-Applications/blob/c25a31f4f10fc60293f8c88a273c3efc88915c13/DEBS%20Challenge.ipynb) includes data normalization and an attempt at implementing the K-Means process.
 
+
+To normalize the data within specified ranges, we use min-max scaling:
+$$
+x_{\text {normalized }}=\frac{x-x_{\min }}{x_{\max }-x_{\min }}
+$$
+
+This renders the data normalized in a range of $0$ to $1$ -- meaning we need to scale it to the desired range with data from the ```norm.csv```. We do so by multiplying with the difference from the provided upper and lower bounds and adding the min:
+
+$$
+x_{\text {scaled }}=  (x_{\text {upper }} - x_{\text {lower }}) \times x_{\text {normalized }}  + x_{\text {lower }}
+$$
+
+This renders a stream of normalized data in the same format as our incoming data.
+
+The next step is to implement a custom K-Means model initialized by the provided centeroids - meaning we already know our $k=50$ and we only need to allocate the lowest euclidean distance:
+
+- __Step 1:__ Perform the cross product of the data stream and center points, generating combinations of all incoming data points (ID: timestamp) and the current centroids (ID: label).
+- __Step 2:__ Calculate the distance between all vectors using PySpark's ```Vectors.squared\_distance()```.
+- __Step 3:__ Aggregate by selecting the minimum distance for all available non-identical pairings for each data stream ID (timestamp).
+- __Step 4:__ Assign a dedicated label for the returned minimum distance.
+- __Step 5:__ Count the number of drives for each label.
+- __Step 6:__ Calculate the average vector for each label and overwrite the centroids.
+
+
+Although this approach makes sense from a theoretical point of view, its practical efficiency is limited. Additionally, we encountered significant challenges in managing and consolidating various aggregations, ultimately resulting in a non-functional implementation. Attempts with PySpark's out-of-the-box solutions proved unsuitable for meeting query 2 of the DEBS grand challenge.
+
 ## Conclusion
 While PySpark offered a valuable learning experience, it posed challenges in terms of processing speed and integration into the benchmarking platform. The second query faced implementation challenges within the given time frame. Despite these challenges, the team recognizes PySpark's learning curve and versatile applications.
