@@ -55,6 +55,32 @@ selectedData = windowedData.select("window.start", "vault_id", "total_failures")
 filteredData = selectedData.filter(selectedData.total_failures > 0)
 ```
 
+
+The provided PySpark code snippet addresses Query 1, which aims to "Count the recent number of failures detected for each vault." The code utilizes the PySpark Structured Streaming API to process data from CSV files as a stream.
+
+1. **`withWatermark("date", "31 days")`:**
+   - The `withWatermark` function sets a watermark on the "date" column, acting as a threshold for late data.
+   - The watermark is set to 31 days, meaning the system considers data arriving up to 31 days late for processing.
+
+2. **`groupBy(df.vault_id, window(df.date, "30 days", "1 day"), df.model)`:**
+   - The `groupBy` operation groups data by "vault_id," creates a 30-day sliding window based on the "date" column with a 1-day interval, and further groups by "model."
+
+3. **`agg(_sum("failure").alias("total_failures"))`:**
+   - The `agg` function performs an aggregation operation on each group created by the `groupBy` clause.
+   - It calculates the sum of the "failure" column for each group and names the resulting column as "total_failures."
+
+4. **`selectedData = windowedData.select("window.start", "vault_id", "total_failures")`:**
+   - The `select` operation chooses specific columns from the `windowedData`, including the start time of the window, "vault_id," and the aggregated "total_failures" column.
+
+5. **`filteredData = selectedData.filter(selectedData.total_failures > 0)`:**
+   - The `filter` operation is applied to keep only the rows where the "total_failures" column is greater than 0.
+   - This step essentially removes records where there were no failures.
+
+The overall process involves creating a structured data stream, defining a sliding window, grouping data, aggregating failures, selecting relevant columns, and filtering out records with no failures.
+
+This PySpark code efficiently addresses the requirement to count recent failures for each vault in a streaming data scenario.
+
+
 The live output of this query is presented in this Table:
 
 
@@ -74,6 +100,7 @@ The second query involves dynamic K-Means clustering. Due to implementation chal
 
 
 To normalize the data within specified ranges, we use min-max scaling:
+
 $$
 x_{\text {normalized }}=\frac{x-x_{\min }}{x_{\max }-x_{\min }}
 $$
