@@ -38,7 +38,7 @@ schema = StructType([
 ```
 
 ### First Query Implementation
-The first query involves counting the recent number of failures detected for each vault using a sliding window. The PySpark code snippet for this query is as follows:
+The first query involves counting the recent number of failures detected for each vault using a sliding window. The PySpark [code](https://github.com/trashpanda-ai/Cloud-Computing-and-Big-Data-Applications/blob/0f9a8f9bd469ab7449575927856e6b02cc41f358/api/all_api.py) snippet for this query is as follows:
 
 ```python
 # Apply Spark operations
@@ -70,7 +70,7 @@ The live output of this query is presented in this Table:
 
 
 ### Second Query Implementation
-The second query involves dynamic K-Means clustering. Due to implementation challenges, the theoretical approach outlined in the README is not fully functional. However, the code includes data normalization and an attempt at implementing the K-Means process.
+The second query involves dynamic K-Means clustering. Due to implementation challenges, the theoretical approach outlined in the project [report](https://www.overleaf.com/read/bngdyswhtzyp#929bac) is not fully functional. However, the [code](https://github.com/trashpanda-ai/Cloud-Computing-and-Big-Data-Applications/blob/c25a31f4f10fc60293f8c88a273c3efc88915c13/DEBS%20Challenge.ipynb) includes data normalization and an attempt at implementing the K-Means process.
 
 ## Conclusion
 While PySpark offered a valuable learning experience, it posed challenges in terms of processing speed and integration into the benchmarking platform. The second query faced implementation challenges within the given time frame. Despite these challenges, the team recognizes PySpark's learning curve and versatile applications.
