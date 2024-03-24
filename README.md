@@ -122,7 +122,7 @@ The next step is to implement a custom K-Means model initialized by the provided
 - __Step 5:__ Count the number of drives for each label.
 - __Step 6:__ Calculate the average vector for each label and overwrite the centroids.
 
-The final implementation looks like this:
+The preliminary implementation looks like this:
 
 ```python
 # Initialize K and centroids
