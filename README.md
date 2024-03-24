@@ -122,8 +122,38 @@ The next step is to implement a custom K-Means model initialized by the provided
 - __Step 5:__ Count the number of drives for each label.
 - __Step 6:__ Calculate the average vector for each label and overwrite the centroids.
 
+The final implementation looks like this:
 
-Although this approach makes sense from a theoretical point of view, its practical efficiency is limited. Additionally, we encountered significant challenges in managing and consolidating various aggregations, ultimately resulting in a non-functional implementation. Attempts with PySpark's out-of-the-box solutions proved unsuitable for meeting query 2 of the DEBS grand challenge.
+```python
+# Initialize K and centroids
+K = 3
+centroids = data.takeSample(False, K, 1) # no replacement and seed 1
+
+
+for _ in range(10):  # max 10 iterations
+    # Assign each data point to the closest centroid 
+    def closest(point):
+        distances = [sqrt(sum((array(point) - c)**2)) for c in centroids]
+        return distances.index(min(distances)), (point, 1)
+    assignment = data.map(closest)
+
+    # Recompute centroids (average of all points in the cluster)
+    def combine(t1, t2):
+        sum1, count1 = t1
+        sum2, count2 = t2
+        # sum all arrays and count the points to normalize
+        return list(array(sum1) + array(sum2)), count1 + count2
+
+    newCentroids = assignment.reduceByKey(combine).map(lambda t: [x / t[1][1] for x in t[1][0]]).collect()
+
+    # Check for convergence
+    if centroids == newCentroids:
+        break
+
+    centroids = newCentroids
+```
+
+Although this approach makes sense from a theoretical point of view, its practical efficiency is limited. Additionally, we encountered significant challenges in managing and consolidating various aggregations. Attempts with PySpark's out-of-the-box solutions proved unsuitable for meeting query 2 of the DEBS grand challenge.
 
 ## Conclusion
 While PySpark offered a valuable learning experience, it posed challenges in terms of processing speed and integration into the benchmarking platform. The second query faced implementation challenges within the given time frame. Despite these challenges, the team recognizes PySpark's learning curve and versatile applications.
